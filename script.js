@@ -242,6 +242,10 @@ function buildPopup(r){
       <p><strong>Potencial educativo:</strong> ${escapeHtml(r.potencial_educativo ?? '')}</p>
       <p>${escapeHtml(r.descricao ?? '')}</p>
 
+      <div class="popup-actions popup-actions-route">
+        <button class="btn-route" onclick="goToAfloramento(${r.latitude}, ${r.longitude})">🧭 Chegar</button>
+      </div>
+
       <div class="popup-actions">
         <button class="btn-edit" onclick="editAfloramento(${r.id})">Editar</button>
         <button class="btn-delete" onclick="deleteAfloramento(${r.id})">Excluir</button>
@@ -250,6 +254,30 @@ function buildPopup(r){
 }
 
 
+
+
+window.goToAfloramento = function(lat, lon){
+  const latitude = Number(lat);
+  const longitude = Number(lon);
+
+  if(!Number.isFinite(latitude) || !Number.isFinite(longitude)){
+    alert('Coordenadas inválidas para rota.');
+    return;
+  }
+
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+  let url;
+
+  if(isIOS){
+    url = `https://maps.apple.com/?daddr=${latitude},${longitude}&dirflg=d`;
+  }else{
+    url = `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}&travelmode=driving`;
+  }
+
+  window.open(url, '_blank');
+}
 
 function fillForm(record){
   document.getElementById('editing-id').value = record.id;
@@ -562,6 +590,41 @@ async function getAllRows(){
   return data || [];
 }
 
+
+document.getElementById('export-toggle').addEventListener('click', () => {
+  document.getElementById('export-options').classList.toggle('open');
+});
+
+document.addEventListener('click', e => {
+  const menu = document.querySelector('.export-menu');
+  const options = document.getElementById('export-options');
+
+  if(menu && options && !menu.contains(e.target)){
+    options.classList.remove('open');
+  }
+});
+
+function closeExportMenu(){
+  const options = document.getElementById('export-options');
+  if(options) options.classList.remove('open');
+}
+
+function getFotosArray(r){
+  try{
+    if(Array.isArray(r.fotos_urls)) return r.fotos_urls;
+    if(typeof r.fotos_urls === 'string') return JSON.parse(r.fotos_urls);
+  }catch(e){}
+  return r.foto_url ? [r.foto_url] : [];
+}
+
+function getFosseisFotosArray(r){
+  try{
+    if(Array.isArray(r.fosseis_fotos_urls)) return r.fosseis_fotos_urls;
+    if(typeof r.fosseis_fotos_urls === 'string') return JSON.parse(r.fosseis_fotos_urls);
+  }catch(e){}
+  return [];
+}
+
 function downloadFile(content, filename, mime){
   const blob = new Blob([content], { type:mime });
   const url = URL.createObjectURL(blob);
@@ -575,6 +638,7 @@ function downloadFile(content, filename, mime){
 }
 
 document.getElementById('export-csv').addEventListener('click', async () => {
+  closeExportMenu();
   try{
     const rows = await getAllRows();
     const header = ['id','nome','municipio','uf','pais','latitude','longitude','altitude','precisao_gps','data_coleta','formacao_geologica','idade_geologica','fosseis_encontrados','fosseis_detalhes','descricao','estado_conservacao','vulnerabilidade','potencial_educativo','observacoes','foto_url','fotos_urls','fosseis_fotos_urls','created_at'];
@@ -590,6 +654,7 @@ document.getElementById('export-csv').addEventListener('click', async () => {
 });
 
 document.getElementById('export-geojson').addEventListener('click', async () => {
+  closeExportMenu();
   try{
     const rows = await getAllRows();
     const features = rows.map(r => {
@@ -633,7 +698,199 @@ document.getElementById('export-geojson').addEventListener('click', async () => 
   }
 });
 
+
+document.getElementById('export-excel').addEventListener('click', async () => {
+  closeExportMenu();
+
+  try{
+    const rows = await getAllRows();
+
+    const tabelaDados = rows.map(r => `
+      <tr>
+        <td>${escapeHtml(r.id)}</td>
+        <td>${escapeHtml(r.nome)}</td>
+        <td>${escapeHtml(r.municipio)}</td>
+        <td>${escapeHtml(r.uf)}</td>
+        <td>${escapeHtml(r.pais || 'Brasil')}</td>
+        <td>${escapeHtml(r.latitude)}</td>
+        <td>${escapeHtml(r.longitude)}</td>
+        <td>${escapeHtml(r.altitude)}</td>
+        <td>${escapeHtml(r.precisao_gps)}</td>
+        <td>${escapeHtml(r.data_coleta)}</td>
+        <td>${escapeHtml(r.formacao_geologica)}</td>
+        <td>${escapeHtml(r.idade_geologica)}</td>
+        <td>${escapeHtml(r.estado_conservacao)}</td>
+        <td>${escapeHtml(r.vulnerabilidade)}</td>
+        <td>${escapeHtml(r.potencial_educativo)}</td>
+        <td>${escapeHtml(r.fosseis_encontrados)}</td>
+        <td>${escapeHtml(r.fosseis_detalhes)}</td>
+        <td>${escapeHtml(r.descricao)}</td>
+        <td>${escapeHtml(r.observacoes)}</td>
+        <td>${r.foto_url ? `<a href="${escapeHtml(r.foto_url)}">foto principal</a>` : ''}</td>
+      </tr>
+    `).join('');
+
+    const catalogoVisual = rows.map(r => {
+      const fotos = getFotosArray(r);
+      const primeiraFoto = fotos[0] || '';
+
+      return `
+        <tr>
+          <td>${primeiraFoto ? `<img src="${escapeHtml(primeiraFoto)}" width="160">` : ''}</td>
+          <td>
+            <strong>${escapeHtml(r.nome)}</strong><br>
+            Município: ${escapeHtml(r.municipio)} / ${escapeHtml(r.uf)}<br>
+            Formação: ${escapeHtml(r.formacao_geologica)}<br>
+            Vulnerabilidade: ${escapeHtml(r.vulnerabilidade)}<br>
+            Potencial educativo: ${escapeHtml(r.potencial_educativo)}<br>
+            Coordenadas: ${escapeHtml(r.latitude)}, ${escapeHtml(r.longitude)}
+          </td>
+          <td>${escapeHtml(r.descricao)}</td>
+        </tr>
+      `;
+    }).join('');
+
+    const resumoFormacoes = {};
+    rows.forEach(r => {
+      const f = r.formacao_geologica || 'Não informado';
+      resumoFormacoes[f] = (resumoFormacoes[f] || 0) + 1;
+    });
+
+    const resumoHtml = Object.entries(resumoFormacoes).map(([f, qtd]) => `
+      <tr>
+        <td>${escapeHtml(f)}</td>
+        <td>${qtd}</td>
+      </tr>
+    `).join('');
+
+    const html = `
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <style>
+          body{font-family:Arial,sans-serif;}
+          table{border-collapse:collapse;width:100%;}
+          th,td{border:1px solid #999;padding:6px;vertical-align:top;}
+          th{background:#e8f3f2;}
+          img{border-radius:6px;}
+          h1,h2{color:#205f5d;}
+        </style>
+      </head>
+      <body>
+        <h1>Inventário Paleontológico - Exportação Visual</h1>
+
+        <h2>Dados completos</h2>
+        <table>
+          <tr>
+            <th>ID</th><th>Nome</th><th>Município</th><th>UF</th><th>País</th>
+            <th>Latitude</th><th>Longitude</th><th>Altitude</th><th>Precisão GPS</th><th>Data coleta</th>
+            <th>Formação</th><th>Idade</th><th>Conservação</th><th>Vulnerabilidade</th><th>Potencial</th>
+            <th>Fósseis</th><th>Detalhes fósseis</th><th>Descrição</th><th>Observações</th><th>Foto</th>
+          </tr>
+          ${tabelaDados}
+        </table>
+
+        <h2>Catálogo visual</h2>
+        <table>
+          <tr><th>Foto</th><th>Identificação</th><th>Descrição</th></tr>
+          ${catalogoVisual}
+        </table>
+
+        <h2>Síntese por formação</h2>
+        <table>
+          <tr><th>Formação</th><th>Quantidade</th></tr>
+          ${resumoHtml}
+        </table>
+      </body>
+      </html>
+    `;
+
+    downloadFile(html, 'inventario_paleontologico_visual.xls', 'application/vnd.ms-excel;charset=utf-8');
+
+  }catch(err){
+    console.error(err);
+    alert('Erro ao exportar Excel visual.');
+  }
+});
+
+document.getElementById('export-kml').addEventListener('click', async () => {
+  closeExportMenu();
+
+  try{
+    const rows = await getAllRows();
+
+    const placemarks = rows.map(r => {
+      const lat = Number(r.latitude);
+      const lon = Number(r.longitude);
+
+      if(!Number.isFinite(lat) || !Number.isFinite(lon)) return '';
+
+      const descricao = `
+        <![CDATA[
+          <strong>${escapeHtml(r.nome)}</strong><br>
+          Município: ${escapeHtml(r.municipio)} / ${escapeHtml(r.uf)}<br>
+          Formação: ${escapeHtml(r.formacao_geologica)}<br>
+          Idade: ${escapeHtml(r.idade_geologica)}<br>
+          Conservação: ${escapeHtml(r.estado_conservacao)}<br>
+          Vulnerabilidade: ${escapeHtml(r.vulnerabilidade)}<br>
+          Potencial educativo: ${escapeHtml(r.potencial_educativo)}<br>
+          Fósseis: ${escapeHtml(r.fosseis_encontrados)}<br>
+          ${r.foto_url ? `<img src="${escapeHtml(r.foto_url)}" width="250">` : ''}
+        ]]>
+      `;
+
+      return `
+        <Placemark>
+          <name>${escapeHtml(r.nome || 'Afloramento')}</name>
+          <description>${descricao}</description>
+          <Point>
+            <coordinates>${lon},${lat},0</coordinates>
+          </Point>
+        </Placemark>
+      `;
+    }).join('');
+
+    const kml = `<?xml version="1.0" encoding="UTF-8"?>
+      <kml xmlns="http://www.opengis.net/kml/2.2">
+        <Document>
+          <name>Inventário Paleontológico</name>
+          ${placemarks}
+        </Document>
+      </kml>`;
+
+    downloadFile(kml, 'afloramentos_google_earth.kml', 'application/vnd.google-earth.kml+xml');
+
+  }catch(err){
+    console.error(err);
+    alert('Erro ao exportar KML.');
+  }
+});
+
+document.getElementById('export-backup').addEventListener('click', async () => {
+  closeExportMenu();
+
+  try{
+    const rows = await getAllRows();
+
+    const backup = {
+      sistema:'Inventário Paleontológico e Geoconservação',
+      exportado_em:new Date().toISOString(),
+      total_registros:rows.length,
+      dados:rows
+    };
+
+    downloadFile(JSON.stringify(backup, null, 2), 'backup_inventario_paleontologico.json', 'application/json;charset=utf-8');
+
+  }catch(err){
+    console.error(err);
+    alert('Erro ao exportar backup.');
+  }
+});
+
+
+
 document.getElementById('export-pdf').addEventListener('click', async () => {
+  closeExportMenu();
   try{
     const rows = await getAllRows();
     const { jsPDF } = window.jspdf;
@@ -795,13 +1052,70 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-document.addEventListener('DOMContentLoaded', () => {
-  const quickGps = document.getElementById('quick-gps');
-  const gpsBtn = document.getElementById('use-location');
+// =====================================================
+// CONTROLES MOBILE: FORMULÁRIO RECOLHÍVEL + GPS RÁPIDO
+// =====================================================
+function openMobileForm(){
+  const sidebar = document.getElementById('sidebar-panel');
+  const overlay = document.getElementById('mobile-panel-overlay');
 
-  if(quickGps && gpsBtn){
-    quickGps.addEventListener('click', () => {
-      gpsBtn.click();
+  if(sidebar) sidebar.classList.add('mobile-open');
+  if(overlay) overlay.classList.add('open');
+
+  setTimeout(() => {
+    if(map) map.invalidateSize();
+  }, 250);
+}
+
+function closeMobileForm(){
+  const sidebar = document.getElementById('sidebar-panel');
+  const overlay = document.getElementById('mobile-panel-overlay');
+
+  if(sidebar) sidebar.classList.remove('mobile-open');
+  if(overlay) overlay.classList.remove('open');
+
+  setTimeout(() => {
+    if(map) map.invalidateSize();
+  }, 250);
+}
+
+function triggerGpsCapture(){
+  const gpsBtn = document.getElementById('use-location');
+  if(gpsBtn) gpsBtn.click();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const toggleForm = document.getElementById('mobile-toggle-form');
+  const closeForm = document.getElementById('mobile-close-form');
+  const overlay = document.getElementById('mobile-panel-overlay');
+  const mobileGps = document.getElementById('mobile-gps');
+  const quickGps = document.getElementById('quick-gps');
+
+  if(toggleForm) toggleForm.addEventListener('click', openMobileForm);
+  if(closeForm) closeForm.addEventListener('click', closeMobileForm);
+  if(overlay) overlay.addEventListener('click', closeMobileForm);
+
+  if(mobileGps){
+    mobileGps.addEventListener('click', () => {
+      triggerGpsCapture();
+      openMobileForm();
     });
   }
+
+  if(quickGps){
+    quickGps.addEventListener('click', triggerGpsCapture);
+  }
+});
+
+// Ao clicar no mapa no celular, abre o formulário para preencher os dados
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    if(map){
+      map.on('click', () => {
+        if(window.innerWidth <= 900){
+          openMobileForm();
+        }
+      });
+    }
+  }, 1000);
 });

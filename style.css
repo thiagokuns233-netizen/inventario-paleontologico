@@ -183,6 +183,74 @@ form textarea{min-height:72px;resize:vertical}
 }
 
 
+.export-menu{
+  position:relative;
+}
+
+.export-menu > button{
+  padding:9px 12px;
+  border-radius:10px;
+  border:1px solid var(--border);
+  background:#fff;
+  cursor:pointer;
+  font-weight:750;
+}
+
+.export-options{
+  display:none;
+  position:absolute;
+  right:0;
+  top:42px;
+  min-width:230px;
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:12px;
+  box-shadow:0 8px 24px rgba(16,24,40,.18);
+  z-index:3000;
+  overflow:hidden;
+}
+
+.export-options.open{
+  display:block;
+}
+
+.export-options button{
+  width:100%;
+  display:block;
+  padding:11px 12px;
+  border:0;
+  border-bottom:1px solid var(--border);
+  background:#fff;
+  text-align:left;
+  cursor:pointer;
+  font-weight:650;
+}
+
+.export-options button:hover{
+  background:#f2fbfa;
+}
+
+.export-options button:last-child{
+  border-bottom:0;
+}
+
+
+.popup-actions-route{
+  margin-top:12px;
+  margin-bottom:6px;
+}
+
+.btn-route{
+  background:#2b7a78;
+  color:white;
+  width:100%;
+}
+
+.btn-route:hover{
+  background:#205f5d;
+}
+
+
 .quick-gps-btn{
   width:100%;
   margin:0 0 12px;
@@ -195,45 +263,138 @@ form textarea{min-height:72px;resize:vertical}
   cursor:pointer;
 }
 
+.mobile-map-controls,
+.mobile-close-form,
+.mobile-panel-overlay{
+  display:none;
+}
+
 @media(max-width:900px){
-  body{
-    overflow:auto;
+  html,body{
+    height:100%;
+    overflow:hidden;
   }
 
   .app-header{
-    position:sticky;
-    top:0;
-    z-index:2000;
-    background:#fff;
+    height:auto;
+    min-height:72px;
+    align-items:flex-start;
+    flex-direction:column;
+    gap:8px;
+    position:relative;
+    z-index:2500;
+  }
+
+  .actions{
+    width:100%;
+    justify-content:flex-start;
+  }
+
+  .export-menu{
+    width:100%;
+  }
+
+  .export-menu > button{
+    width:100%;
+    text-align:center;
+  }
+
+  .export-options{
+    left:0;
+    right:auto;
+    top:42px;
+    width:100%;
+    min-width:260px;
   }
 
   .app-main{
-    display:flex !important;
-    flex-direction:column !important;
-    height:auto !important;
-    min-height:100vh;
+    height:calc(100vh - 112px) !important;
+    display:block !important;
+    position:relative !important;
   }
 
   .map{
-    order:1;
-    width:100%;
-    height:45vh !important;
-    min-height:320px !important;
-    flex:none !important;
-    border-bottom:1px solid var(--border);
+    height:100% !important;
+    width:100% !important;
+    min-height:0 !important;
   }
 
   .sidebar{
-    order:2;
-    position:static !important;
-    z-index:auto !important;
+    position:fixed !important;
+    left:0 !important;
+    right:0 !important;
+    bottom:0 !important;
+    top:auto !important;
     width:100% !important;
     max-width:none !important;
-    max-height:none !important;
-    border-radius:0 !important;
-    box-shadow:none !important;
-    border-right:0 !important;
-    padding:14px;
+    height:72vh !important;
+    max-height:72vh !important;
+    z-index:4000 !important;
+    transform:translateY(105%);
+    transition:transform .25s ease;
+    border-radius:18px 18px 0 0 !important;
+    box-shadow:0 -10px 30px rgba(16,24,40,.24) !important;
+    border:1px solid var(--border) !important;
+    overflow:auto !important;
+    padding:14px !important;
+  }
+
+  .sidebar.mobile-open{
+    transform:translateY(0);
+  }
+
+  .mobile-close-form{
+    display:block;
+    position:sticky;
+    top:0;
+    z-index:4100;
+    width:100%;
+    margin:0 0 12px;
+    padding:10px;
+    border:0;
+    border-radius:10px;
+    background:#616161;
+    color:white;
+    font-weight:800;
+    cursor:pointer;
+  }
+
+  .mobile-panel-overlay{
+    display:none;
+    position:fixed;
+    inset:0;
+    z-index:3500;
+    background:rgba(0,0,0,.28);
+  }
+
+  .mobile-panel-overlay.open{
+    display:block;
+  }
+
+  .mobile-map-controls{
+    display:flex;
+    gap:8px;
+    position:fixed;
+    left:12px;
+    right:12px;
+    bottom:14px;
+    z-index:3000;
+  }
+
+  .mobile-map-controls button{
+    flex:1;
+    padding:13px 12px;
+    border:0;
+    border-radius:14px;
+    background:var(--accent);
+    color:white;
+    font-weight:850;
+    box-shadow:0 8px 22px rgba(16,24,40,.24);
+    cursor:pointer;
+  }
+
+  .mobile-map-controls button#mobile-gps{
+    background:#0e9f9c;
   }
 
   .buttons{
@@ -242,5 +403,9 @@ form textarea{min-height:72px;resize:vertical}
 
   .coords-row{
     grid-template-columns:1fr 1fr;
+  }
+
+  .legend-box{
+    margin-bottom:70px;
   }
 }
