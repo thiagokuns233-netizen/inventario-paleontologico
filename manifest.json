@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Inventário Paleontológico - Afloramentos</title>
+  <meta name="theme-color" content="#2b7a78" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Inventário Paleo" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="style.css?v=21" />
+</head>
+<body>
+  <header class="app-header">
+    <div>
+      <h1>Inventário Paleontológico</h1>
+      <p>Cadastro e mapeamento de afloramentos</p>
+    </div>
+    <div class="actions">
+      <div class="export-menu">
+        <button id="export-toggle" type="button">📤 Exportar</button>
+
+        <div id="export-options" class="export-options">
+          <button id="export-csv" type="button">📄 CSV técnico</button>
+          <button id="export-excel" type="button">📊 Excel visual</button>
+          <button id="export-geojson" type="button">🗺️ GeoJSON / QGIS</button>
+          <button id="export-kml" type="button">🛰️ KML / Google Earth</button>
+          <button id="export-pdf" type="button">📚 Ficha PDF científica</button>
+          <button id="export-backup" type="button">💾 Backup completo JSON</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="app-main">
+    <aside class="sidebar">
+      <form id="afloramento-form">
+<input type="hidden" id="editing-id" value="">
+        <h2>Cadastrar Afloramento</h2>
+
+        <label>Nome do afloramento
+          <input name="nome" required />
+        </label>
+
+        <label>Município
+          <input name="municipio" value="" placeholder="Preenchido automaticamente pelo GPS" />
+        </label>
+
+        <div class="coords-row">
+          <label>UF
+            <input name="uf" id="uf" placeholder="Ex.: PR" />
+          </label>
+          <label>País
+            <input name="pais" id="pais" value="Brasil" />
+          </label>
+        </div>
+
+        <div class="coords-row">
+          <label>Latitude
+            <input name="latitude" id="latitude" required inputmode="decimal" />
+          </label>
+          <label>Longitude
+            <input name="longitude" id="longitude" required inputmode="decimal" />
+          </label>
+        </div>
+
+        <label>Altitude
+          <input name="altitude" id="altitude" type="number" step="0.1" />
+        </label>
+
+        <div class="coords-row">
+          <label>Precisão do GPS (m)
+            <input name="precisao_gps" id="precisao_gps" type="number" step="0.1" readonly />
+          </label>
+          <label>Data/hora da coleta
+            <input name="data_coleta" id="data_coleta" readonly />
+          </label>
+        </div>
+
+        <label>Formação geológica
+          <input name="formacao_geologica" />
+        </label>
+
+        <label>Idade geológica
+          <input name="idade_geologica" />
+        </label>
+
+        <label>Fósseis encontrados
+          <textarea name="fosseis_encontrados" placeholder="Resumo: braquiópodes, bivalves, trilobitas..."></textarea>
+        </label>
+
+        <div class="subsection-box">
+          <h3>Subcategoria: fósseis do afloramento</h3>
+
+          <label>Detalhes dos fósseis
+            <textarea name="fosseis_detalhes" placeholder="Ex.: fóssil 1: braquiópode em folhelho; fóssil 2: bivalve em arenito..."></textarea>
+          </label>
+
+          <label>Fotos dos fósseis
+            <input type="file" name="fotos_fosseis" id="fotos_fosseis" accept="image/jpeg,image/png,.jpg,.jpeg,.png" capture="environment" multiple />
+          </label>
+        </div>
+
+        <label>Descrição
+          <textarea name="descricao"></textarea>
+        </label>
+
+        <label>Estado de conservação
+          <select name="estado_conservacao">
+            <option value="Bom">Bom</option>
+            <option value="Regular">Regular</option>
+            <option value="Ruim">Ruim</option>
+          </select>
+        </label>
+
+        <label>Vulnerabilidade
+          <select name="vulnerabilidade">
+            <option value="Baixa">Baixa</option>
+            <option value="Média">Média</option>
+            <option value="Alta">Alta</option>
+          </select>
+        </label>
+
+        <label>Potencial educativo
+          <select name="potencial_educativo">
+            <option value="Baixo">Baixo</option>
+            <option value="Médio">Médio</option>
+            <option value="Alto">Alto</option>
+          </select>
+        </label>
+
+        <label>Observações
+          <textarea name="observacoes"></textarea>
+        </label>
+
+        <label>Foto do afloramento
+          <input type="file" name="foto" id="foto" accept="image/jpeg,image/png,.jpg,.jpeg,.png" capture="environment" multiple />
+        </label>
+
+        <div class="buttons">
+          <button type="button" id="use-location">Capturar ponto atual</button>
+          <button type="button" id="clear-point">Limpar ponto</button>
+          <button type="submit" id="save">Salvar</button>
+<button type="button" id="cancel-edit" style="display:none;">Cancelar</button>
+        </div>
+      </form>
+
+      <div class="status" id="status">Pronto para cadastrar.</div>
+
+      <div class="legend-box">
+        <h3>Legenda Geológica</h3>
+
+        <div class="legend-item">
+          <span class="legend-color furnas"></span> Formação Furnas
+        </div>
+
+        <div class="legend-item">
+          <span class="legend-color ponta-grossa"></span> Formação Ponta Grossa
+        </div>
+
+        <div class="legend-item">
+          <span class="legend-color sao-domingos"></span> Formação São Domingos
+        </div>
+
+        <div class="legend-item">
+          <span class="legend-color outros"></span> Outros / Não informado
+        </div>
+
+        <label class="filter-label">
+          Filtrar formação
+          <select id="formation-filter">
+            <option value="all">Todas</option>
+            <option value="furnas">Furnas</option>
+            <option value="ponta grossa">Ponta Grossa</option>
+            <option value="são domingos">São Domingos</option>
+          </select>
+        </label>
+
+        <div class="custom-formation-box">
+          <h4>Adicionar nova formação</h4>
+
+          <input type="text" id="new-formation-name" placeholder="Ex.: Itararé" />
+
+          <input type="color" id="new-formation-color" value="#795548" />
+
+          <button type="button" id="add-formation-btn">
+            Adicionar formação
+          </button>
+        </div>
+
+        <div id="custom-formations-list"></div>
+      </div>
+
+    </aside>
+
+    <section id="map" class="map" aria-label="Mapa dos afloramentos"></section>
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="script.js?v=21"></script>
+
+  <script>
+    if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js')
+          .then(() => console.log('Service Worker registrado.'))
+          .catch(err => console.warn('Falha ao registrar Service Worker:', err));
+      });
+    }
+  </script>
+
+</body>
+</html>
