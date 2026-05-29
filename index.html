@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Inventário Paleontológico - Afloramentos</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="style.css?v=21" />
+  <link rel="stylesheet" href="style.css?v=23" />
 </head>
 <body>
   <header class="app-header">
@@ -13,19 +13,13 @@
       <h1>Inventário Paleontológico</h1>
       <p>Cadastro e mapeamento de afloramentos</p>
     </div>
-    <div class="actions">
-      <div class="export-menu">
-        <button id="export-toggle" type="button">📤 Exportar</button>
-
-        <div id="export-options" class="export-options">
-          <button id="export-csv" type="button">📄 CSV técnico</button>
-          <button id="export-excel" type="button">📊 Excel visual</button>
-          <button id="export-geojson" type="button">🗺️ GeoJSON / QGIS</button>
-          <button id="export-kml" type="button">🛰️ KML / Google Earth</button>
-          <button id="export-pdf" type="button">📚 Ficha PDF científica</button>
-          <button id="export-backup" type="button">💾 Backup completo JSON</button>
-        </div>
-      </div>
+    <div class="actions export-visible">
+      <button id="export-csv" type="button">CSV</button>
+      <button id="export-excel" type="button">Excel visual</button>
+      <button id="export-geojson" type="button">GeoJSON/QGIS</button>
+      <button id="export-kml" type="button">KML</button>
+      <button id="export-pdf" type="button">PDF</button>
+      <button id="export-backup" type="button">Backup</button>
     </div>
   </header>
 
@@ -80,28 +74,17 @@
         </div>
 
         <label>Formação geológica
-          <input name="formacao_geologica" />
+          <input name="formacao_geologica" list="lista-formacoes" placeholder="Digite ou selecione uma formação" />
+          <datalist id="lista-formacoes">
+            <option value="Formação Furnas"></option>
+            <option value="Formação Ponta Grossa"></option>
+            <option value="Formação São Domingos"></option>
+          </datalist>
         </label>
 
         <label>Idade geológica
           <input name="idade_geologica" />
         </label>
-
-        <label>Fósseis encontrados
-          <textarea name="fosseis_encontrados" placeholder="Resumo: braquiópodes, bivalves, trilobitas..."></textarea>
-        </label>
-
-        <div class="subsection-box">
-          <h3>Subcategoria: fósseis do afloramento</h3>
-
-          <label>Detalhes dos fósseis
-            <textarea name="fosseis_detalhes" placeholder="Ex.: fóssil 1: braquiópode em folhelho; fóssil 2: bivalve em arenito..."></textarea>
-          </label>
-
-          <label>Fotos dos fósseis
-            <input type="file" name="fotos_fosseis" id="fotos_fosseis" accept="image/jpeg,image/png,.jpg,.jpeg,.png" capture="environment" multiple />
-          </label>
-        </div>
 
         <label>Descrição
           <textarea name="descricao"></textarea>
@@ -138,6 +121,31 @@
         <label>Foto do afloramento
           <input type="file" name="foto" id="foto" accept="image/jpeg,image/png,.jpg,.jpeg,.png" capture="environment" multiple />
         </label>
+
+        <div class="subsection-box fossil-secondary">
+          <h3>Registro fossilífero associado</h3>
+          <p class="subsection-description">
+            Subcategoria complementar. O foco principal do cadastro é o afloramento e sua importância para a geoconservação.
+          </p>
+
+          <label>Fósseis encontrados
+            <input type="text" id="fossil-search" placeholder="Pesquisar fóssil do Devoniano do Paraná..." />
+          </label>
+
+          <div id="fossil-checklist" class="fossil-checklist"></div>
+
+          <label>Fósseis selecionados / observações livres
+            <textarea name="fosseis_encontrados" id="fosseis_encontrados" placeholder="Os fósseis marcados entram aqui automaticamente. Você também pode complementar manualmente."></textarea>
+          </label>
+
+          <label>Detalhes dos fósseis
+            <textarea name="fosseis_detalhes" placeholder="Ex.: fóssil 1: braquiópode em folhelho; fóssil 2: bivalve em arenito..."></textarea>
+          </label>
+
+          <label>Fotos dos fósseis
+            <input type="file" name="fotos_fosseis" id="fotos_fosseis" accept="image/jpeg,image/png,.jpg,.jpeg,.png" capture="environment" multiple />
+          </label>
+        </div>
 
         <div class="buttons">
           <button type="button" id="use-location">Capturar ponto atual</button>
@@ -208,6 +216,6 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="script.js?v=21"></script>
+  <script src="script.js?v=23"></script>
 </body>
 </html>

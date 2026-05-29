@@ -294,6 +294,7 @@ function fillForm(record){
   document.querySelector('[name="formacao_geologica"]').value = record.formacao_geologica || '';
   document.querySelector('[name="idade_geologica"]').value = record.idade_geologica || '';
   document.querySelector('[name="fosseis_encontrados"]').value = record.fosseis_encontrados || '';
+  document.querySelector('[name="fosseis_encontrados"]').dataset.manual = record.fosseis_encontrados || '';
   document.querySelector('[name="fosseis_detalhes"]').value = record.fosseis_detalhes || '';
   document.querySelector('[name="descricao"]').value = record.descricao || '';
   document.querySelector('[name="estado_conservacao"]').value = record.estado_conservacao || 'Bom';
@@ -591,9 +592,12 @@ async function getAllRows(){
 }
 
 
-document.getElementById('export-toggle').addEventListener('click', () => {
-  document.getElementById('export-options').classList.toggle('open');
-});
+const exportToggle = document.getElementById('export-toggle');
+if(exportToggle){
+  exportToggle.addEventListener('click', () => {
+    document.getElementById('export-options').classList.toggle('open');
+  });
+}
 
 document.addEventListener('click', e => {
   const menu = document.querySelector('.export-menu');
@@ -1043,10 +1047,11 @@ document.addEventListener('DOMContentLoaded', () => {
       localStorage.setItem('customFormations', JSON.stringify(customFormations));
 
       renderCustomFormations();
+      updateFormationDatalist();
 
       nameInput.value = '';
 
-      alert('Nova formação adicionada à legenda.');
+      alert('Nova formação adicionada à legenda e às sugestões do formulário.');
     });
   }
 });
@@ -1118,4 +1123,142 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
   }, 1000);
+});
+
+
+// =====================================================
+// SUGESTÕES DE FORMAÇÃO + BIBLIOTECA FOSSILÍFERA
+// =====================================================
+const fossilLibraryDevonianoPR = [
+  { nome:'Braquiópodes', grupo:'Brachiopoda' },
+  { nome:'Lingulida', grupo:'Brachiopoda' },
+  { nome:'Orbiculoidea', grupo:'Brachiopoda' },
+  { nome:'Australospirifer', grupo:'Brachiopoda' },
+  { nome:'Australocoelia', grupo:'Brachiopoda' },
+  { nome:'Schuchertella', grupo:'Brachiopoda' },
+  { nome:'Derbyina', grupo:'Brachiopoda' },
+  { nome:'Bivalves', grupo:'Mollusca' },
+  { nome:'Tentaculites', grupo:'Tentaculitoidea' },
+  { nome:'Trilobitas', grupo:'Arthropoda' },
+  { nome:'Calmonia', grupo:'Trilobita' },
+  { nome:'Homalonotus', grupo:'Trilobita' },
+  { nome:'Dalmanites', grupo:'Trilobita' },
+  { nome:'Conularia', grupo:'Cnidaria / Conulata' },
+  { nome:'Crinoides', grupo:'Echinodermata' },
+  { nome:'Ostracodes', grupo:'Arthropoda' },
+  { nome:'Gastrópodes', grupo:'Mollusca' },
+  { nome:'Hyolithes', grupo:'Hyolitha' },
+  { nome:'Icnofósseis', grupo:'Traços fósseis' },
+  { nome:'Skolithos', grupo:'Icnofóssil' },
+  { nome:'Planolites', grupo:'Icnofóssil' },
+  { nome:'Cruziana', grupo:'Icnofóssil' },
+  { nome:'Rusophycus', grupo:'Icnofóssil' },
+  { nome:'Moldes externos', grupo:'Tipo de preservação' },
+  { nome:'Moldes internos', grupo:'Tipo de preservação' },
+  { nome:'Fragmentos fossilíferos indeterminados', grupo:'Indeterminado' }
+];
+
+function normalizeTextForSearch(value){
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+}
+
+function updateFormationDatalist(){
+  const datalist = document.getElementById('lista-formacoes');
+  if(!datalist) return;
+
+  const base = [
+    'Formação Furnas',
+    'Formação Ponta Grossa',
+    'Formação São Domingos'
+  ];
+
+  const customs = (customFormations || []).map(f => f.name);
+
+  const all = [...new Set([...base, ...customs])];
+
+  datalist.innerHTML = all
+    .map(nome => `<option value="${escapeHtml(nome)}"></option>`)
+    .join('');
+}
+
+function getSelectedFossils(){
+  return Array.from(document.querySelectorAll('.fossil-check:checked'))
+    .map(input => input.value);
+}
+
+function updateFossilTextarea(){
+  const textarea = document.getElementById('fosseis_encontrados');
+  if(!textarea) return;
+
+  const selected = getSelectedFossils();
+  const manual = textarea.dataset.manual || '';
+
+  const selectedText = selected.join('; ');
+
+  if(manual && manual.trim()){
+    textarea.value = selectedText ? `${selectedText}; ${manual}` : manual;
+  }else{
+    textarea.value = selectedText;
+  }
+}
+
+function renderFossilChecklist(){
+  const box = document.getElementById('fossil-checklist');
+  const search = document.getElementById('fossil-search');
+
+  if(!box) return;
+
+  const query = normalizeTextForSearch(search?.value || '');
+
+  const selected = new Set(getSelectedFossils());
+
+  const filtered = fossilLibraryDevonianoPR.filter(f => {
+    const haystack = normalizeTextForSearch(`${f.nome} ${f.grupo}`);
+    return !query || haystack.includes(query);
+  });
+
+  box.innerHTML = filtered.map(f => {
+    const checked = selected.has(f.nome) ? 'checked' : '';
+
+    return `
+      <label class="fossil-option">
+        <input type="checkbox" class="fossil-check" value="${escapeHtml(f.nome)}" ${checked}>
+        <span>
+          ${escapeHtml(f.nome)}
+          <small>${escapeHtml(f.grupo)}</small>
+        </span>
+      </label>
+    `;
+  }).join('');
+
+  box.querySelectorAll('.fossil-check').forEach(input => {
+    input.addEventListener('change', updateFossilTextarea);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  updateFormationDatalist();
+  renderFossilChecklist();
+
+  const fossilSearch = document.getElementById('fossil-search');
+  if(fossilSearch){
+    fossilSearch.addEventListener('input', renderFossilChecklist);
+  }
+
+  const fossilTextarea = document.getElementById('fosseis_encontrados');
+  if(fossilTextarea){
+    fossilTextarea.addEventListener('input', () => {
+      const selected = getSelectedFossils().join('; ');
+      let value = fossilTextarea.value;
+
+      if(selected && value.startsWith(selected)){
+        value = value.replace(selected, '').replace(/^;\s*/, '');
+      }
+
+      fossilTextarea.dataset.manual = value;
+    });
+  }
 });
