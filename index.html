@@ -4,15 +4,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Inventário Paleontológico - Afloramentos</title>
-  <meta name="theme-color" content="#2b7a78" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <meta name="apple-mobile-web-app-title" content="Inventário Paleo" />
-  <link rel="manifest" href="manifest.json" />
-  <link rel="apple-touch-icon" href="icons/icon-192.png" />
-
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="style.css?v=21" />
+  <link rel="stylesheet" href="style.css?v=20" />
 </head>
 <body>
   <header class="app-header">
@@ -21,18 +14,9 @@
       <p>Cadastro e mapeamento de afloramentos</p>
     </div>
     <div class="actions">
-      <div class="export-menu">
-        <button id="export-toggle" type="button">📤 Exportar</button>
-
-        <div id="export-options" class="export-options">
-          <button id="export-csv" type="button">📄 CSV técnico</button>
-          <button id="export-excel" type="button">📊 Excel visual</button>
-          <button id="export-geojson" type="button">🗺️ GeoJSON / QGIS</button>
-          <button id="export-kml" type="button">🛰️ KML / Google Earth</button>
-          <button id="export-pdf" type="button">📚 Ficha PDF científica</button>
-          <button id="export-backup" type="button">💾 Backup completo JSON</button>
-        </div>
-      </div>
+      <button id="export-csv" type="button">Exportar CSV</button>
+      <button id="export-geojson" type="button">Exportar GeoJSON</button>
+      <button id="export-pdf" type="button">Exportar PDF</button>
     </div>
   </header>
 
@@ -41,6 +25,10 @@
       <form id="afloramento-form">
 <input type="hidden" id="editing-id" value="">
         <h2>Cadastrar Afloramento</h2>
+
+        <button type="button" id="quick-gps" class="quick-gps-btn">
+          📍 Capturar ponto atual pelo GPS
+        </button>
 
         <label>Nome do afloramento
           <input name="nome" required />
@@ -203,17 +191,6 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="script.js?v=21"></script>
-
-  <script>
-    if ('serviceWorker' in navigator && location.protocol !== 'file:') {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('service-worker.js')
-          .then(() => console.log('Service Worker registrado.'))
-          .catch(err => console.warn('Falha ao registrar Service Worker:', err));
-      });
-    }
-  </script>
-
+  <script src="script.js?v=20"></script>
 </body>
 </html>
