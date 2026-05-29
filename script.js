@@ -82,6 +82,11 @@ function getFormationColor(formacao){
   if(f.includes('ponta grossa')) return '#d32f2f';
   if(f.includes('são domingos') || f.includes('sao domingos')) return '#388e3c';
 
+  const custom = (typeof customFormations !== 'undefined' ? customFormations : [])
+    .find(item => f.includes(String(item.name || '').toLowerCase()));
+
+  if(custom && custom.color) return custom.color;
+
   return '#616161';
 }
 
@@ -1058,75 +1063,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // =====================================================
-// CONTROLES MOBILE: FORMULÁRIO RECOLHÍVEL + GPS RÁPIDO
-// =====================================================
-function openMobileForm(){
-  const sidebar = document.getElementById('sidebar-panel');
-  const overlay = document.getElementById('mobile-panel-overlay');
-
-  if(sidebar) sidebar.classList.add('mobile-open');
-  if(overlay) overlay.classList.add('open');
-
-  setTimeout(() => {
-    if(map) map.invalidateSize();
-  }, 250);
-}
-
-function closeMobileForm(){
-  const sidebar = document.getElementById('sidebar-panel');
-  const overlay = document.getElementById('mobile-panel-overlay');
-
-  if(sidebar) sidebar.classList.remove('mobile-open');
-  if(overlay) overlay.classList.remove('open');
-
-  setTimeout(() => {
-    if(map) map.invalidateSize();
-  }, 250);
-}
-
-function triggerGpsCapture(){
-  const gpsBtn = document.getElementById('use-location');
-  if(gpsBtn) gpsBtn.click();
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  const toggleForm = document.getElementById('mobile-toggle-form');
-  const closeForm = document.getElementById('mobile-close-form');
-  const overlay = document.getElementById('mobile-panel-overlay');
-  const mobileGps = document.getElementById('mobile-gps');
-  const quickGps = document.getElementById('quick-gps');
-
-  if(toggleForm) toggleForm.addEventListener('click', openMobileForm);
-  if(closeForm) closeForm.addEventListener('click', closeMobileForm);
-  if(overlay) overlay.addEventListener('click', closeMobileForm);
-
-  if(mobileGps){
-    mobileGps.addEventListener('click', () => {
-      triggerGpsCapture();
-      openMobileForm();
-    });
-  }
-
-  if(quickGps){
-    quickGps.addEventListener('click', triggerGpsCapture);
-  }
-});
-
-// Ao clicar no mapa no celular, abre o formulário para preencher os dados
-document.addEventListener('DOMContentLoaded', () => {
-  setTimeout(() => {
-    if(map){
-      map.on('click', () => {
-        if(window.innerWidth <= 900){
-          openMobileForm();
-        }
-      });
-    }
-  }, 1000);
-});
-
-
-// =====================================================
 // SUGESTÕES DE FORMAÇÃO + BIBLIOTECA FOSSILÍFERA
 // =====================================================
 const fossilLibraryDevonianoPR = [
@@ -1260,5 +1196,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
       fossilTextarea.dataset.manual = value;
     });
+  }
+});
+
+
+// GPS rápido no topo do formulário
+document.addEventListener('DOMContentLoaded', () => {
+  const quickGpsSimple = document.getElementById('quick-gps');
+  const gpsBtnSimple = document.getElementById('use-location');
+
+  if(quickGpsSimple && gpsBtnSimple){
+    quickGpsSimple.addEventListener('click', () => gpsBtnSimple.click());
   }
 });

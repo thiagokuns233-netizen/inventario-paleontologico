@@ -251,6 +251,7 @@ form textarea{min-height:72px;resize:vertical}
 }
 
 
+
 .quick-gps-btn{
   width:100%;
   margin:0 0 12px;
@@ -266,148 +267,7 @@ form textarea{min-height:72px;resize:vertical}
 .mobile-map-controls,
 .mobile-close-form,
 .mobile-panel-overlay{
-  display:none;
-}
-
-@media(max-width:900px){
-  html,body{
-    height:100%;
-    overflow:hidden;
-  }
-
-  .app-header{
-    height:auto;
-    min-height:72px;
-    align-items:flex-start;
-    flex-direction:column;
-    gap:8px;
-    position:relative;
-    z-index:2500;
-  }
-
-  .actions{
-    width:100%;
-    justify-content:flex-start;
-  }
-
-  .export-menu{
-    width:100%;
-  }
-
-  .export-menu > button{
-    width:100%;
-    text-align:center;
-  }
-
-  .export-options{
-    left:0;
-    right:auto;
-    top:42px;
-    width:100%;
-    min-width:260px;
-  }
-
-  .app-main{
-    height:calc(100vh - 112px) !important;
-    display:block !important;
-    position:relative !important;
-  }
-
-  .map{
-    height:100% !important;
-    width:100% !important;
-    min-height:0 !important;
-  }
-
-  .sidebar{
-    position:fixed !important;
-    left:0 !important;
-    right:0 !important;
-    bottom:0 !important;
-    top:auto !important;
-    width:100% !important;
-    max-width:none !important;
-    height:72vh !important;
-    max-height:72vh !important;
-    z-index:4000 !important;
-    transform:translateY(105%);
-    transition:transform .25s ease;
-    border-radius:18px 18px 0 0 !important;
-    box-shadow:0 -10px 30px rgba(16,24,40,.24) !important;
-    border:1px solid var(--border) !important;
-    overflow:auto !important;
-    padding:14px !important;
-  }
-
-  .sidebar.mobile-open{
-    transform:translateY(0);
-  }
-
-  .mobile-close-form{
-    display:block;
-    position:sticky;
-    top:0;
-    z-index:4100;
-    width:100%;
-    margin:0 0 12px;
-    padding:10px;
-    border:0;
-    border-radius:10px;
-    background:#616161;
-    color:white;
-    font-weight:800;
-    cursor:pointer;
-  }
-
-  .mobile-panel-overlay{
-    display:none;
-    position:fixed;
-    inset:0;
-    z-index:3500;
-    background:rgba(0,0,0,.28);
-  }
-
-  .mobile-panel-overlay.open{
-    display:block;
-  }
-
-  .mobile-map-controls{
-    display:flex;
-    gap:8px;
-    position:fixed;
-    left:12px;
-    right:12px;
-    bottom:14px;
-    z-index:3000;
-  }
-
-  .mobile-map-controls button{
-    flex:1;
-    padding:13px 12px;
-    border:0;
-    border-radius:14px;
-    background:var(--accent);
-    color:white;
-    font-weight:850;
-    box-shadow:0 8px 22px rgba(16,24,40,.24);
-    cursor:pointer;
-  }
-
-  .mobile-map-controls button#mobile-gps{
-    background:#0e9f9c;
-  }
-
-  .buttons{
-    grid-template-columns:1fr !important;
-  }
-
-  .coords-row{
-    grid-template-columns:1fr 1fr;
-  }
-
-  .legend-box{
-    margin-bottom:70px;
-  }
+  display:none !important;
 }
 
 
@@ -423,29 +283,6 @@ form textarea{min-height:72px;resize:vertical}
   background:#fafafa;
 }
 
-.export-visible{
-  display:flex;
-  gap:8px;
-  overflow-x:auto;
-  max-width:100%;
-  padding-bottom:2px;
-}
-
-.export-visible button{
-  white-space:nowrap;
-}
-
-@media(max-width:900px){
-  .export-visible{
-    flex-wrap:nowrap;
-    width:100%;
-    overflow-x:auto;
-  }
-
-  .export-visible button{
-    flex:0 0 auto;
-  }
-}
 
 
 .fossil-checklist{
@@ -482,4 +319,82 @@ form textarea{min-height:72px;resize:vertical}
   color:var(--muted);
   font-size:.76rem;
   margin-top:2px;
+}
+
+
+/* Ajuste final: celular sem formulário recolhível */
+@media(max-width:900px){
+  html,body{
+    height:auto !important;
+    overflow:auto !important;
+  }
+
+  .app-header{
+    position:sticky;
+    top:0;
+    z-index:2500;
+    background:#fff;
+  }
+
+  .actions{
+    width:100%;
+    justify-content:flex-start;
+  }
+
+  .export-menu{
+    width:100%;
+  }
+
+  .export-menu > button{
+    width:100%;
+    text-align:center;
+  }
+
+  .export-options{
+    left:0;
+    right:auto;
+    top:42px;
+    width:100%;
+    min-width:260px;
+  }
+
+  .app-main{
+    display:flex !important;
+    flex-direction:column !important;
+    height:auto !important;
+    min-height:100vh;
+    position:static !important;
+  }
+
+  .map{
+    order:1;
+    height:42vh !important;
+    min-height:300px !important;
+    width:100% !important;
+    flex:none !important;
+    border-bottom:1px solid var(--border);
+  }
+
+  .sidebar{
+    order:2;
+    position:static !important;
+    transform:none !important;
+    width:100% !important;
+    max-width:none !important;
+    max-height:none !important;
+    height:auto !important;
+    border-radius:0 !important;
+    box-shadow:none !important;
+    border-right:0 !important;
+    padding:14px !important;
+    overflow:visible !important;
+  }
+
+  .buttons{
+    grid-template-columns:1fr !important;
+  }
+
+  .coords-row{
+    grid-template-columns:1fr 1fr;
+  }
 }
